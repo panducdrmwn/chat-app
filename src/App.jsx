@@ -1,6 +1,5 @@
-import { useState } from 'react'
-import firebase from 'firebase/compat/app'
-import 'firebase/firestore'
+import { useRef, useState } from 'react'
+// import "./app.css"
 import 'firebase/auth'
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
 import { initializeApp } from "firebase/app";
@@ -9,6 +8,7 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore, query, orderBy, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import {useAuthState} from 'react-firebase-hooks/auth'
 import {useCollectionData} from 'react-firebase-hooks/firestore'
+import { LazyLoadImage } from "react-lazy-load-image-component";
 
 
 const firebaseConfig = ({
@@ -31,11 +31,17 @@ function App() {
   const [user] = useAuthState(auth);
 
   return (
-    <>
-      <div>
+    
+      <div className='m-auto text-center max-w-3xl'>
+        <header className='bg-teal-900 h-[10vh] min-h-[50px] text-white fixed w-full max-w-3xl top-0 flex items-center justify-between z-[99] p-[10px] box-border'>
+          <h1>⚛️🔥💬</h1>
+          <SignOut />
+        </header>
+        <section className='bg-neutral-800 flex flex-col justify-center min-h-[100vh]'>
         {user ? <ChatRoom/> : <SignIn/>}
+        </section>
      </div>
-    </>
+    
   )
 }
 
@@ -51,14 +57,14 @@ function SignIn() {
 }
 
   return (
-    <button onClick={signMeIn}>Sign In</button>
+    <button className='p-2 rounded-2xl bg-blue-700 max-w-2xl items-centers self-center' onClick={signMeIn}>Sign In</button>
   )
 
 }
 
 function SignOut (){
   return auth.currentUser && (
-    <button onClick={()=> auth.signOut()}>Sign Out</button>
+    <button className='bg-red-600 p-4 rounded-2xl' onClick={()=> auth.signOut()}>Sign Out</button>
   )
 }
 
@@ -66,6 +72,7 @@ function ChatRoom(){
   const messageRef = collection(db, "messages")
   const q = query(messageRef,orderBy('createdAt'));
   const [messages] =  useCollectionData(q, {idField: 'id'});
+  const scrolldown = useRef()
 
   const [formValue, setFormValue] =  useState('')
 
@@ -81,6 +88,7 @@ function ChatRoom(){
     })
 
     setFormValue('')
+    scrolldown.current.scrollIntoView({ behavior:'smooth' });
   }
   
   return(
@@ -90,9 +98,10 @@ function ChatRoom(){
           messages && messages.map(msg => <ChatMessage key={msg.id} message={msg}/>)
         }
 
-        <form onSubmit={sendMessage}>
-          <input type="text" value={formValue} onChange={(e)=> setFormValue(e.target.value)}/>
-          <button onSubmit={sendMessage}>Send</button>
+        <div ref={scrolldown}></div>
+        <form className='h-[10vh] fixed bottom-0 w-full max-w-3xl flex  bg-gray-700' onSubmit={sendMessage}>
+          <input className='w-full font-medium bg-gray-700 text-white outline-0 border-0 p-0' type="text" value={formValue} onChange={(e)=> setFormValue(e.target.value)}/>
+          <button className='w-[20%] rounded-l-2xl bg-emerald-600' onSubmit={sendMessage}>Send</button>
         </form>
       </div>
     </>
@@ -101,12 +110,13 @@ function ChatRoom(){
 
 function ChatMessage(props){
   const {text, uid, photoURL} = props.message;
+  
   const messageClass = uid === auth.currentUser.uid ? 'sent' : 'received'
 
   return (
-    <div className={`message ${messageClass}`}>
-      <img src={photoURL}/>
-      <p>{text}</p>
+    <div className={` flex items-center ${messageClass === 'sent' && 'flex-row-reverse'}`}>
+      <img className='w-10 rounded-4xl my-[2px] mx-[5px]' src={photoURL} loading='lazy'/>
+      <p className={`${messageClass === 'sent' ? 'bg-blue-600 p-2 rounded-2xl text-white' : 'bg-amber-50 text-black p-2 rounded-2xl'}`}>{text}</p>
     </div>
   )
 }
