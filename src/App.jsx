@@ -8,7 +8,7 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore, query, orderBy, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import {useAuthState} from 'react-firebase-hooks/auth'
 import {useCollectionData} from 'react-firebase-hooks/firestore'
-import { LazyLoadImage } from "react-lazy-load-image-component";
+
 
 
 const firebaseConfig = ({
